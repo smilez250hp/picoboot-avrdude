@@ -34,7 +34,7 @@
 #
 
 #
-# $Id: Makefile.am 1265 2014-01-16 07:57:36Z joerg_wunsch $
+# $Id: Makefile.am 1175 2013-05-15 18:55:19Z rliebscher $
 #
 
 
@@ -90,13 +90,12 @@ am_libavrdude_a_OBJECTS = libavrdude_a-config_gram.$(OBJEXT) \
 	libavrdude_a-buspirate.$(OBJEXT) \
 	libavrdude_a-butterfly.$(OBJEXT) libavrdude_a-config.$(OBJEXT) \
 	libavrdude_a-confwin.$(OBJEXT) libavrdude_a-crc16.$(OBJEXT) \
-	libavrdude_a-dfu.$(OBJEXT) libavrdude_a-fileio.$(OBJEXT) \
-	libavrdude_a-flip1.$(OBJEXT) libavrdude_a-flip2.$(OBJEXT) \
-	libavrdude_a-ft245r.$(OBJEXT) libavrdude_a-jtagmkI.$(OBJEXT) \
-	libavrdude_a-jtagmkII.$(OBJEXT) libavrdude_a-jtag3.$(OBJEXT) \
-	libavrdude_a-linuxgpio.$(OBJEXT) libavrdude_a-lists.$(OBJEXT) \
-	libavrdude_a-par.$(OBJEXT) libavrdude_a-pgm.$(OBJEXT) \
-	libavrdude_a-pgm_type.$(OBJEXT) libavrdude_a-pickit2.$(OBJEXT) \
+	libavrdude_a-fileio.$(OBJEXT) libavrdude_a-ft245r.$(OBJEXT) \
+	libavrdude_a-jtagmkI.$(OBJEXT) libavrdude_a-jtagmkII.$(OBJEXT) \
+	libavrdude_a-jtag3.$(OBJEXT) libavrdude_a-linuxgpio.$(OBJEXT) \
+	libavrdude_a-lists.$(OBJEXT) libavrdude_a-par.$(OBJEXT) \
+	libavrdude_a-pgm.$(OBJEXT) libavrdude_a-pgm_type.$(OBJEXT) \
+	libavrdude_a-picoboot.$(OBJEXT) libavrdude_a-pickit2.$(OBJEXT) \
 	libavrdude_a-pindefs.$(OBJEXT) libavrdude_a-ppi.$(OBJEXT) \
 	libavrdude_a-ppiwin.$(OBJEXT) libavrdude_a-safemode.$(OBJEXT) \
 	libavrdude_a-serbb_posix.$(OBJEXT) \
@@ -338,7 +337,6 @@ EXTRA_DIST = \
 	ChangeLog-2010 \
 	ChangeLog-2011 \
 	ChangeLog-2012 \
-	ChangeLog-2013 \
 	avrdude.1 \
 	avrdude.spec \
 	bootstrap
@@ -393,14 +391,8 @@ libavrdude_a_SOURCES = \
 	confwin.h \
 	crc16.c \
 	crc16.h \
-	dfu.c \
-	dfu.h \
 	fileio.c \
 	fileio.h \
-	flip1.c \
-	flip1.h \
-	flip2.c \
-	flip2.h \
 	freebsd_ppi.h \
 	ft245r.c \
 	ft245r.h \
@@ -425,6 +417,8 @@ libavrdude_a_SOURCES = \
 	pgm.h \
 	pgm_type.c \
 	pgm_type.h \
+	picoboot.c \
+	picoboot.h \
 	pickit2.c \
 	pickit2.h \
 	pindefs.c \
@@ -603,10 +597,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-config_gram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-confwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-crc16.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-dfu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-fileio.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-flip1.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-flip2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-ft245r.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-jtag3.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-jtagmkI.Po@am__quote@
@@ -618,6 +609,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-pgm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-pgm_type.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-pickit2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-picoboot.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-pindefs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-ppi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-ppiwin.Po@am__quote@
@@ -846,20 +838,6 @@ libavrdude_a-crc16.obj: crc16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-crc16.obj `if test -f 'crc16.c'; then $(CYGPATH_W) 'crc16.c'; else $(CYGPATH_W) '$(srcdir)/crc16.c'; fi`
 
-libavrdude_a-dfu.o: dfu.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-dfu.o -MD -MP -MF $(DEPDIR)/libavrdude_a-dfu.Tpo -c -o libavrdude_a-dfu.o `test -f 'dfu.c' || echo '$(srcdir)/'`dfu.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-dfu.Tpo $(DEPDIR)/libavrdude_a-dfu.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dfu.c' object='libavrdude_a-dfu.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-dfu.o `test -f 'dfu.c' || echo '$(srcdir)/'`dfu.c
-
-libavrdude_a-dfu.obj: dfu.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-dfu.obj -MD -MP -MF $(DEPDIR)/libavrdude_a-dfu.Tpo -c -o libavrdude_a-dfu.obj `if test -f 'dfu.c'; then $(CYGPATH_W) 'dfu.c'; else $(CYGPATH_W) '$(srcdir)/dfu.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-dfu.Tpo $(DEPDIR)/libavrdude_a-dfu.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dfu.c' object='libavrdude_a-dfu.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-dfu.obj `if test -f 'dfu.c'; then $(CYGPATH_W) 'dfu.c'; else $(CYGPATH_W) '$(srcdir)/dfu.c'; fi`
-
 libavrdude_a-fileio.o: fileio.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-fileio.o -MD -MP -MF $(DEPDIR)/libavrdude_a-fileio.Tpo -c -o libavrdude_a-fileio.o `test -f 'fileio.c' || echo '$(srcdir)/'`fileio.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-fileio.Tpo $(DEPDIR)/libavrdude_a-fileio.Po
@@ -873,34 +851,6 @@ libavrdude_a-fileio.obj: fileio.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='fileio.c' object='libavrdude_a-fileio.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-fileio.obj `if test -f 'fileio.c'; then $(CYGPATH_W) 'fileio.c'; else $(CYGPATH_W) '$(srcdir)/fileio.c'; fi`
-
-libavrdude_a-flip1.o: flip1.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-flip1.o -MD -MP -MF $(DEPDIR)/libavrdude_a-flip1.Tpo -c -o libavrdude_a-flip1.o `test -f 'flip1.c' || echo '$(srcdir)/'`flip1.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-flip1.Tpo $(DEPDIR)/libavrdude_a-flip1.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='flip1.c' object='libavrdude_a-flip1.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-flip1.o `test -f 'flip1.c' || echo '$(srcdir)/'`flip1.c
-
-libavrdude_a-flip1.obj: flip1.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-flip1.obj -MD -MP -MF $(DEPDIR)/libavrdude_a-flip1.Tpo -c -o libavrdude_a-flip1.obj `if test -f 'flip1.c'; then $(CYGPATH_W) 'flip1.c'; else $(CYGPATH_W) '$(srcdir)/flip1.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-flip1.Tpo $(DEPDIR)/libavrdude_a-flip1.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='flip1.c' object='libavrdude_a-flip1.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-flip1.obj `if test -f 'flip1.c'; then $(CYGPATH_W) 'flip1.c'; else $(CYGPATH_W) '$(srcdir)/flip1.c'; fi`
-
-libavrdude_a-flip2.o: flip2.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-flip2.o -MD -MP -MF $(DEPDIR)/libavrdude_a-flip2.Tpo -c -o libavrdude_a-flip2.o `test -f 'flip2.c' || echo '$(srcdir)/'`flip2.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-flip2.Tpo $(DEPDIR)/libavrdude_a-flip2.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='flip2.c' object='libavrdude_a-flip2.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-flip2.o `test -f 'flip2.c' || echo '$(srcdir)/'`flip2.c
-
-libavrdude_a-flip2.obj: flip2.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-flip2.obj -MD -MP -MF $(DEPDIR)/libavrdude_a-flip2.Tpo -c -o libavrdude_a-flip2.obj `if test -f 'flip2.c'; then $(CYGPATH_W) 'flip2.c'; else $(CYGPATH_W) '$(srcdir)/flip2.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-flip2.Tpo $(DEPDIR)/libavrdude_a-flip2.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='flip2.c' object='libavrdude_a-flip2.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-flip2.obj `if test -f 'flip2.c'; then $(CYGPATH_W) 'flip2.c'; else $(CYGPATH_W) '$(srcdir)/flip2.c'; fi`
 
 libavrdude_a-ft245r.o: ft245r.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-ft245r.o -MD -MP -MF $(DEPDIR)/libavrdude_a-ft245r.Tpo -c -o libavrdude_a-ft245r.o `test -f 'ft245r.c' || echo '$(srcdir)/'`ft245r.c
@@ -1027,6 +977,20 @@ libavrdude_a-pgm_type.obj: pgm_type.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='pgm_type.c' object='libavrdude_a-pgm_type.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-pgm_type.obj `if test -f 'pgm_type.c'; then $(CYGPATH_W) 'pgm_type.c'; else $(CYGPATH_W) '$(srcdir)/pgm_type.c'; fi`
+
+libavrdude_a-picoboot.o: picoboot.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-picoboot.o -MD -MP -MF $(DEPDIR)/libavrdude_a-picoboot.Tpo -c -o libavrdude_a-picoboot.o `test -f 'picoboot.c' || echo '$(srcdir)/'`picoboot.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-picoboot.Tpo $(DEPDIR)/libavrdude_a-picoboot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='picoboot.c' object='libavrdude_a-picoboot.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-picoboot.o `test -f 'picoboot.c' || echo '$(srcdir)/'`picoboot.c
+
+libavrdude_a-picoboot.obj: picoboot.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-picoboot.obj -MD -MP -MF $(DEPDIR)/libavrdude_a-picoboot.Tpo -c -o libavrdude_a-picoboot.obj `if test -f 'picoboot.c'; then $(CYGPATH_W) 'picoboot.c'; else $(CYGPATH_W) '$(srcdir)/picoboot.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-picoboot.Tpo $(DEPDIR)/libavrdude_a-picoboot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='picoboot.c' object='libavrdude_a-picoboot.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-picoboot.obj `if test -f 'picoboot.c'; then $(CYGPATH_W) 'picoboot.c'; else $(CYGPATH_W) '$(srcdir)/picoboot.c'; fi`
 
 libavrdude_a-pickit2.o: pickit2.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-pickit2.o -MD -MP -MF $(DEPDIR)/libavrdude_a-pickit2.Tpo -c -o libavrdude_a-pickit2.o `test -f 'pickit2.c' || echo '$(srcdir)/'`pickit2.c
