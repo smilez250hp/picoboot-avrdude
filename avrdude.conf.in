@@ -350,6 +350,14 @@ programmer
   connection_type = serial;
 ;
 
+# http://code.google.com/p/picoboot/
+programmer
+  id    = "picoboot";
+  desc  = "Picoboot";
+  type  = "picoboot";
+  connection_type = serial;
+;
+
 programmer
   id    = "arduino";
   desc  = "Arduino";
