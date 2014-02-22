@@ -43,6 +43,7 @@
 #include "linuxgpio.h"
 #include "par.h"
 #include "pickit2.h"
+#include "picoboot.h"
 #include "ppi.h"
 #include "serbb.h"
 #include "stk500.h"
@@ -83,6 +84,7 @@ const PROGRAMMER_TYPE const programmers_types[] = {
         {"linuxgpio", linuxgpio_initpgm, linuxgpio_desc},
         {"par", par_initpgm, par_desc},
         {"pickit2", pickit2_initpgm, pickit2_desc},
+        {"picoboot", picoboot_initpgm, picoboot_desc},
         {"serbb", serbb_initpgm, serbb_desc},
         {"stk500", stk500_initpgm, stk500_desc},
         {"stk500generic", stk500generic_initpgm, stk500generic_desc},
