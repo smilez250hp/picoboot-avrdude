@@ -42,12 +42,11 @@ struct frame{
   uint8_t command;
 };
 
-#define FRAME_ACK 0xC0C0C0C0
+/* due to ACK buffering, keep MAX_FRAMES <= serial fifo size */
+#define MAX_FRAMES 8
 
-#define BOOTLOADER_SIZE 64
-
-/* usleep on win32 is very imprecise, so use large delay */
-#define PAGE_DELAY 15000
+/* 2 byte virtual reset vector + 64 bytes code = 66 */
+#define BOOTLOADER_SIZE 66
 
 #define DEBUG(...) if (verbose > 1) fprintf(stderr, __VA_ARGS__)
 
@@ -62,43 +61,60 @@ static int picoboot_not_implemented_2 (PROGRAMMER * pgm, AVRPART * p)
   return 0;
 }
 
-static int picoboot_not_implemented_3(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m)
-{
-  DEBUG("PICOBOOT: picoboot_not_implemented_3()\n");
-  return 0;
-}
-
-int picoboot_send_frame(union filedescriptor *fd, struct frame* f)
+void picoboot_send_frame(union filedescriptor *fd, struct frame* f)
 {
   char *buf = (char*)f;
-  char resp[4];
 
   DEBUG("PICOBOOT: picoboot_send_frame()\n");
   f->check = f->data_lo ^ f->data_hi ^ f->command;
   serial_send(fd, buf, sizeof(*f));
+}
 
-  if (serial_recv(fd, resp, 4) < 0){
-    DEBUG("PICOBOOT: picoboot_send_frame() response not received\n");
+int picoboot_wait_ack(union filedescriptor *fd)
+{
+  char resp;
+
+  if (serial_recv(fd, &resp, 1) < 0){
+    DEBUG("PICOBOOT: picoboot_wait_ack() response not received\n");
     return -1;
   }
-  else if (*((uint32_t*)resp) != FRAME_ACK) {
+  else if (resp != 0) {
     fprintf(stderr,
-      "\n%s: picoboot_send_frame(): (a) protocol error, "
-      "expect ACK=0x%08x, resp=0x%08x\n",
-      progname, FRAME_ACK, *((uint32_t*)resp));
+      "\n%s: picoboot_wait_ack(): protocol error, "
+      "expect ACK=0x%02x, resp=0x%02x\n",
+      progname, 0, resp);
     exit(1);
   }
 
   return 0;
 }
 
+/* send multiple frames back-to-back for higher serial throughput */
+int picoboot_buffered_send(union filedescriptor *fd, struct frame* f)
+{
+  static char buf[MAX_FRAMES * sizeof(*f)];
+  static char* bufp = buf;
+  int ack_count;
+
+  f->check = f->data_lo ^ f->data_hi ^ f->command;
+  memcpy (bufp, f, sizeof(*f));
+  bufp += sizeof(*f);
+
+  /* check for full buffer */
+  if ( bufp - buf == MAX_FRAMES * sizeof(*f)){
+    serial_send(fd, buf, bufp - buf);
+    bufp = buf;
+    for (ack_count = MAX_FRAMES; ack_count--;)
+      if (picoboot_wait_ack(fd) != 0) return -1;
+  }
+  return 0;
+}
+
 static int picoboot_open(PROGRAMMER * pgm, char * port)
 {
   DEBUG("PICOBOOT: picoboot_open()\n");
-  union pinfo pinfo;
   strcpy(pgm->port, port);
-  pinfo.baud = pgm->baudrate? pgm->baudrate: 230400;
-  if (serial_open(port, pinfo, &pgm->fd)==-1) {
+  if (serial_open(port, pgm->baudrate? pgm->baudrate: 460800, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -120,7 +136,8 @@ static int picoboot_initialize (PROGRAMMER * pgm, AVRPART * p)
   struct frame f;
   memset (&f, 0, sizeof(f));
   /* send frame of zeros */
-  return picoboot_send_frame(&pgm->fd, &f);
+  picoboot_send_frame(&pgm->fd, &f);
+  return picoboot_wait_ack(&pgm->fd);
 }
 
 static int picoboot_read_sig_bytes(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m)
@@ -151,12 +168,51 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
 {
   const uint8_t reset_vec_lo = 0xdf;   /* rjmp BootStart */
   const uint8_t reset_vec_hi = 0xcf;   /* rjmp BootStart */
-  uint16_t appstart, vrst_vec_addr;
-  unsigned int cur_addr;
+  uint16_t appstart, vrst_vec_addr =
+    m->size - BOOTLOADER_SIZE;
   struct frame f;
   union filedescriptor *fd = &pgm->fd;
+ 
+  int fill_page_buf (uint16_t page_addr)
+  {
+    uint16_t cur_addr = page_addr;
+    DEBUG("\nPICOBOOT: fill_page_buf() address 0x%04X\n", cur_addr);
 
-  DEBUG("\nPICOBOOT: picoboot_paged_write() addrress 0x%04X\n", addr);
+    for (;cur_addr < (page_addr + page_size); cur_addr+=2 ){
+      f.data_lo = m->buf[cur_addr];
+      f.data_hi = m->buf[cur_addr+1];
+      f.command = 0;
+      picoboot_buffered_send(fd, &f);
+
+      f.data_lo = cur_addr & 0xff;
+      f.data_hi = (cur_addr & 0xff00) >> 8;
+      f.command = 0x01; /* fill temp buffer */
+      picoboot_buffered_send(fd, &f);
+    }
+    return 0;
+  }
+
+  int erase_page (int page_addr)
+  {
+    f.data_lo = page_addr & 0xff;
+    f.data_hi = (page_addr & 0xff00) >> 8;
+    f.command = 0x03; /* erase page */
+    picoboot_send_frame(fd, &f);
+    if (picoboot_wait_ack(fd) != 0) return -1;
+    return 0;
+  }
+
+  int write_page (int page_addr)
+  {
+    f.data_lo = page_addr & 0xff;
+    f.data_hi = (page_addr & 0xff00) >> 8;
+    f.command = 0x05; /* write page */
+    picoboot_send_frame(fd, &f);
+    if (picoboot_wait_ack(fd) != 0) return -1;
+    return 0;
+  }
+
+  DEBUG("\nPICOBOOT: picoboot_paged_write() address 0x%04X\n", addr);
 
   /* only flash write supported */
   if (strcmp(m->desc, "flash") != 0){
@@ -164,48 +220,53 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
     return -1;
   }
 
+  if ( addr >= vrst_vec_addr) {
+    fprintf(stderr,
+      "\n%s: picoboot_paged_write(): error, "
+      "attempt to write to bootloader memory.\n",
+      progname);
+    exit (1);
+  }
+
+  if ( addr > (vrst_vec_addr - page_size)) {
+    /* virtual reset vector page written along with page 0 */
+    return num_bytes;
+  }
+
   if ( addr == 0 ) {
+    uint16_t vrst_vec_page = vrst_vec_addr - page_size +2;
+
     /* save and redirect reset vector */
     appstart = *((uint8_t *)m->buf) | 
                *((uint8_t *)m->buf +1 ) << 8; 
+    /* validate rjmp at reset vector */
+    if ((appstart & 0xF000) != 0xC000) {
+      fprintf(stderr,
+        "\n%s: picoboot_paged_write(): error, "
+        "No reset vector in flash file.\n",
+        progname);
+      exit (1);
+    } 
+
     *((uint8_t *)m->buf) = reset_vec_lo;
     *((uint8_t *)m->buf+1) = reset_vec_hi;
 
     /* calculate new rjmp for appstart */
-    vrst_vec_addr = m->size - BOOTLOADER_SIZE;
     appstart = 0xc000 |
-               ( (vrst_vec_addr/2) + (appstart & 0x0FFF) );
+               (((appstart & 0x0FFF) + BOOTLOADER_SIZE/2) & 0x0FFF);
     m->buf[vrst_vec_addr] = appstart & 0x00FF;
     m->buf[vrst_vec_addr+1] = appstart >> 8;
-    m->tags[vrst_vec_addr] |= TAG_ALLOCATED;
-    m->tags[vrst_vec_addr+1] |= TAG_ALLOCATED;
+    DEBUG("\nPICOBOOT: virtual reset vector 0x%04x at 0x%04x.\n",
+          appstart, vrst_vec_addr);
+
+    if (fill_page_buf(vrst_vec_page) != 0) return -1;
+    if (erase_page(vrst_vec_page) != 0) return -1;
+    if (write_page(vrst_vec_page) != 0) return -1;
   }
  
-  for ( cur_addr = addr; cur_addr < (addr + page_size); cur_addr+=2 ){
-    /* reverse byte order for data */
-    f.data_lo = m->buf[cur_addr];
-    f.data_hi = m->buf[cur_addr+1];
-    f.command = 0;
-    if (picoboot_send_frame(fd, &f) != 0) return -1;
-    f.data_lo = cur_addr & 0xff;
-    f.data_hi = (cur_addr & 0xff00) >> 8;
-    f.command = 0x01; /* fill temp buffer */
-    if (picoboot_send_frame(fd, &f) != 0) return -1;
-  }
-
-  /* erase page */
-  cur_addr -= page_size;
-  f.data_lo = cur_addr & 0xff;
-  f.data_hi = (cur_addr & 0xff00) >> 8;
-  f.command = 0x03; /* erase page */
-  if (picoboot_send_frame(fd, &f) != 0) return -1;
-  usleep(PAGE_DELAY); 
-  /* serial_sleep(m->max_write_delay); */
-
-  /* write page */
-  f.command = 0x05; /* write page */
-  if (picoboot_send_frame(fd, &f) != 0) return -1;
-  usleep(PAGE_DELAY); 
+  if (fill_page_buf(addr) != 0) return -1;
+  if (erase_page(addr) != 0) return -1;
+  if (write_page(addr) != 0) return -1;
 
   return num_bytes;
 }
