@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: ser_posix.c 1276 2014-02-21 13:44:11Z joerg_wunsch $ */
+/* $Id: ser_posix.c 1200 2013-09-03 11:05:13Z joerg_wunsch $ */
 
 /*
  * Posix serial interface for avrdude.
@@ -253,7 +253,7 @@ static int ser_set_dtr_rts(union filedescriptor *fdp, int is_on)
   return 0;
 }
 
-static int ser_open(char * port, union pinfo pinfo, union filedescriptor *fdp)
+static int ser_open(char * port, long baud, union filedescriptor *fdp)
 {
   int rc;
   int fd;
@@ -281,7 +281,7 @@ static int ser_open(char * port, union pinfo pinfo, union filedescriptor *fdp)
   /*
    * set serial line attributes
    */
-  rc = ser_setspeed(fdp, pinfo.baud);
+  rc = ser_setspeed(fdp, baud);
   if (rc) {
     fprintf(stderr, 
             "%s: ser_open(): can't set attributes for device \"%s\": %s\n",

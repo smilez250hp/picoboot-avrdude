@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: ser_win32.c 1276 2014-02-21 13:44:11Z joerg_wunsch $ */
+/* $Id: ser_win32.c 1107 2012-11-20 14:03:50Z joerg_wunsch $ */
 
 /*
  * Native Win32 serial interface for avrdude.
@@ -111,7 +111,7 @@ static int ser_setspeed(union filedescriptor *fd, long baud)
 }
 
 
-static int ser_open(char * port, union pinfo pinfo, union filedescriptor *fdp)
+static int ser_open(char * port, long baud, union filedescriptor *fdp)
 {
 	LPVOID lpMsgBuf;
 	HANDLE hComPort=INVALID_HANDLE_VALUE;
@@ -177,7 +177,7 @@ static int ser_open(char * port, union pinfo pinfo, union filedescriptor *fdp)
 	}
 
         fdp->pfd = (void *)hComPort;
-	if (ser_setspeed(fdp, pinfo.baud) != 0)
+	if (ser_setspeed(fdp, baud) != 0)
 	{
 		CloseHandle(hComPort);
 		fprintf(stderr, "%s: ser_open(): can't set com-state for \"%s\"\n",

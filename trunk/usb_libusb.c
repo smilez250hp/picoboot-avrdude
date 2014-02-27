@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: usb_libusb.c 1276 2014-02-21 13:44:11Z joerg_wunsch $ */
+/* $Id: usb_libusb.c 1228 2013-09-13 19:56:07Z joerg_wunsch $ */
 
 /*
  * USB interface via libusb for avrdude.
@@ -61,7 +61,7 @@ static int usb_interface;
  * The "baud" parameter is meaningless for USB devices, so we reuse it
  * to pass the desired USB device ID.
  */
-static int usbdev_open(char * port, union pinfo pinfo, union filedescriptor *fd)
+static int usbdev_open(char * port, long baud, union filedescriptor *fd)
 {
   char string[256];
   char product[256];
@@ -115,8 +115,8 @@ static int usbdev_open(char * port, union pinfo pinfo, union filedescriptor *fd)
     {
       for (dev = bus->devices; dev; dev = dev->next)
 	{
-	  if (dev->descriptor.idVendor == pinfo.usbinfo.vid &&
-	      dev->descriptor.idProduct == pinfo.usbinfo.pid)
+	  if (dev->descriptor.idVendor == USB_VENDOR_ATMEL &&
+	      dev->descriptor.idProduct == (unsigned short)baud)
 	    {
 	      udev = usb_open(dev);
 	      if (udev)
@@ -269,7 +269,7 @@ static void usbdev_close(union filedescriptor *fd)
 
   (void)usb_release_interface(udev, usb_interface);
 
-#if defined(__linux__)
+#if !( defined(__FreeBSD__) ) // || ( defined(__APPLE__) && defined(__MACH__) ) )
   /*
    * Without this reset, the AVRISP mkII seems to stall the second
    * time we try to connect to it.  This is not necessary on

@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: arduino.c 1276 2014-02-21 13:44:11Z joerg_wunsch $ */
+/* $Id: arduino.c 1107 2012-11-20 14:03:50Z joerg_wunsch $ */
 
 /*
  * avrdude interface for Arduino programmer
@@ -85,10 +85,8 @@ static int arduino_read_sig_bytes(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m)
 
 static int arduino_open(PROGRAMMER * pgm, char * port)
 {
-  union pinfo pinfo;
   strcpy(pgm->port, port);
-  pinfo.baud = pgm->baudrate? pgm->baudrate: 115200;
-  if (serial_open(port, pinfo, &pgm->fd)==-1) {
+  if (serial_open(port, pgm->baudrate? pgm->baudrate: 115200, &pgm->fd)==-1) {
     return -1;
   }
 

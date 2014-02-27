@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: serial.h 1276 2014-02-21 13:44:11Z joerg_wunsch $ */
+/* $Id: serial.h 1108 2012-11-26 16:24:56Z joerg_wunsch $ */
 
 /* This is the API for the generic serial interface. The implementations are
    actually provided by the target dependant files:
@@ -44,22 +44,10 @@ union filedescriptor
   } usb;
 };
 
-union pinfo
-{
-  long baud;
-  struct
-  {
-    unsigned short vid;
-    unsigned short pid;
-    unsigned short flags;
-  } usbinfo;
-};
-
-
 struct serial_device
 {
   // open should return -1 on error, other values on success
-  int (*open)(char * port, union pinfo pinfo, union filedescriptor *fd); 
+  int (*open)(char * port, long baud, union filedescriptor *fd); 
   int (*setspeed)(union filedescriptor *fd, long baud);
   void (*close)(union filedescriptor *fd);
 

@@ -21,7 +21,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: jtagmkII.c 1276 2014-02-21 13:44:11Z joerg_wunsch $ */
+/* $Id: jtagmkII.c 1212 2013-09-08 19:57:58Z joerg_wunsch $ */
 
 /*
  * avrdude interface for Atmel JTAG ICE mkII programmer
@@ -1541,7 +1541,7 @@ static int jtagmkII_parseextparms(PROGRAMMER * pgm, LISTID extparms)
 
 static int jtagmkII_open(PROGRAMMER * pgm, char * port)
 {
-  union pinfo pinfo;
+  long baud;
 
   if (verbose >= 2)
     fprintf(stderr, "%s: jtagmkII_open()\n", progname);
@@ -1552,7 +1552,7 @@ static int jtagmkII_open(PROGRAMMER * pgm, char * port)
    * a higher baud rate, we switch to it later on, after establishing
    * the connection with the ICE.
    */
-  pinfo.baud = 19200;
+  baud = 19200;
 
   /*
    * If the port name starts with "usb", divert the serial routines
@@ -1563,9 +1563,7 @@ static int jtagmkII_open(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev;
-    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
-    pinfo.usbinfo.flags = 0;
-    pinfo.usbinfo.pid = USB_DEVICE_JTAGICEMKII;
+    baud = USB_DEVICE_JTAGICEMKII;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
     pgm->fd.usb.rep = USBDEV_BULK_EP_READ_MKII;
     pgm->fd.usb.wep = USBDEV_BULK_EP_WRITE_MKII;
@@ -1577,7 +1575,7 @@ static int jtagmkII_open(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, pinfo, &pgm->fd)==-1) {
+  if (serial_open(port, baud, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -1594,7 +1592,7 @@ static int jtagmkII_open(PROGRAMMER * pgm, char * port)
 
 static int jtagmkII_open_dw(PROGRAMMER * pgm, char * port)
 {
-  union pinfo pinfo;
+  long baud;
 
   if (verbose >= 2)
     fprintf(stderr, "%s: jtagmkII_open_dw()\n", progname);
@@ -1605,7 +1603,7 @@ static int jtagmkII_open_dw(PROGRAMMER * pgm, char * port)
    * a higher baud rate, we switch to it later on, after establishing
    * the connection with the ICE.
    */
-  pinfo.baud = 19200;
+  baud = 19200;
 
   /*
    * If the port name starts with "usb", divert the serial routines
@@ -1616,9 +1614,7 @@ static int jtagmkII_open_dw(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev;
-    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
-    pinfo.usbinfo.flags = 0;
-    pinfo.usbinfo.pid = USB_DEVICE_JTAGICEMKII;
+    baud = USB_DEVICE_JTAGICEMKII;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
     pgm->fd.usb.rep = USBDEV_BULK_EP_READ_MKII;
     pgm->fd.usb.wep = USBDEV_BULK_EP_WRITE_MKII;
@@ -1630,7 +1626,7 @@ static int jtagmkII_open_dw(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, pinfo, &pgm->fd)==-1) {
+  if (serial_open(port, baud, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -1647,7 +1643,7 @@ static int jtagmkII_open_dw(PROGRAMMER * pgm, char * port)
 
 static int jtagmkII_open_pdi(PROGRAMMER * pgm, char * port)
 {
-  union pinfo pinfo;
+  long baud;
 
   if (verbose >= 2)
     fprintf(stderr, "%s: jtagmkII_open_pdi()\n", progname);
@@ -1658,7 +1654,7 @@ static int jtagmkII_open_pdi(PROGRAMMER * pgm, char * port)
    * a higher baud rate, we switch to it later on, after establishing
    * the connection with the ICE.
    */
-  pinfo.baud = 19200;
+  baud = 19200;
 
   /*
    * If the port name starts with "usb", divert the serial routines
@@ -1669,9 +1665,7 @@ static int jtagmkII_open_pdi(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev;
-    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
-    pinfo.usbinfo.flags = 0;
-    pinfo.usbinfo.pid = USB_DEVICE_JTAGICEMKII;
+    baud = USB_DEVICE_JTAGICEMKII;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
     pgm->fd.usb.rep = USBDEV_BULK_EP_READ_MKII;
     pgm->fd.usb.wep = USBDEV_BULK_EP_WRITE_MKII;
@@ -1683,7 +1677,7 @@ static int jtagmkII_open_pdi(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, pinfo, &pgm->fd)==-1) {
+  if (serial_open(port, baud, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -1701,7 +1695,7 @@ static int jtagmkII_open_pdi(PROGRAMMER * pgm, char * port)
 
 static int jtagmkII_dragon_open(PROGRAMMER * pgm, char * port)
 {
-  union pinfo pinfo;
+  long baud;
 
   if (verbose >= 2)
     fprintf(stderr, "%s: jtagmkII_dragon_open()\n", progname);
@@ -1712,7 +1706,7 @@ static int jtagmkII_dragon_open(PROGRAMMER * pgm, char * port)
    * a higher baud rate, we switch to it later on, after establishing
    * the connection with the ICE.
    */
-  pinfo.baud = 19200;
+  baud = 19200;
 
   /*
    * If the port name starts with "usb", divert the serial routines
@@ -1723,9 +1717,7 @@ static int jtagmkII_dragon_open(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev;
-    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
-    pinfo.usbinfo.flags = 0;
-    pinfo.usbinfo.pid = USB_DEVICE_AVRDRAGON;
+    baud = USB_DEVICE_AVRDRAGON;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
     pgm->fd.usb.rep = USBDEV_BULK_EP_READ_MKII;
     pgm->fd.usb.wep = USBDEV_BULK_EP_WRITE_MKII;
@@ -1737,7 +1729,7 @@ static int jtagmkII_dragon_open(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, pinfo, &pgm->fd)==-1) {
+  if (serial_open(port, baud, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -1755,7 +1747,7 @@ static int jtagmkII_dragon_open(PROGRAMMER * pgm, char * port)
 
 static int jtagmkII_dragon_open_dw(PROGRAMMER * pgm, char * port)
 {
-  union pinfo pinfo;
+  long baud;
 
   if (verbose >= 2)
     fprintf(stderr, "%s: jtagmkII_dragon_open_dw()\n", progname);
@@ -1766,7 +1758,7 @@ static int jtagmkII_dragon_open_dw(PROGRAMMER * pgm, char * port)
    * a higher baud rate, we switch to it later on, after establishing
    * the connection with the ICE.
    */
-  pinfo.baud = 19200;
+  baud = 19200;
 
   /*
    * If the port name starts with "usb", divert the serial routines
@@ -1777,9 +1769,7 @@ static int jtagmkII_dragon_open_dw(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev;
-    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
-    pinfo.usbinfo.flags = 0;
-    pinfo.usbinfo.pid = USB_DEVICE_AVRDRAGON;
+    baud = USB_DEVICE_AVRDRAGON;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
     pgm->fd.usb.rep = USBDEV_BULK_EP_READ_MKII;
     pgm->fd.usb.wep = USBDEV_BULK_EP_WRITE_MKII;
@@ -1791,7 +1781,7 @@ static int jtagmkII_dragon_open_dw(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, pinfo, &pgm->fd)==-1) {
+  if (serial_open(port, baud, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -1809,7 +1799,7 @@ static int jtagmkII_dragon_open_dw(PROGRAMMER * pgm, char * port)
 
 static int jtagmkII_dragon_open_pdi(PROGRAMMER * pgm, char * port)
 {
-  union pinfo pinfo;
+  long baud;
 
   if (verbose >= 2)
     fprintf(stderr, "%s: jtagmkII_dragon_open_pdi()\n", progname);
@@ -1820,7 +1810,7 @@ static int jtagmkII_dragon_open_pdi(PROGRAMMER * pgm, char * port)
    * a higher baud rate, we switch to it later on, after establishing
    * the connection with the ICE.
    */
-  pinfo.baud = 19200;
+  baud = 19200;
 
   /*
    * If the port name starts with "usb", divert the serial routines
@@ -1831,9 +1821,7 @@ static int jtagmkII_dragon_open_pdi(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev;
-    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
-    pinfo.usbinfo.flags = 0;
-    pinfo.usbinfo.pid = USB_DEVICE_AVRDRAGON;
+    baud = USB_DEVICE_AVRDRAGON;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
     pgm->fd.usb.rep = USBDEV_BULK_EP_READ_MKII;
     pgm->fd.usb.wep = USBDEV_BULK_EP_WRITE_MKII;
@@ -1845,7 +1833,7 @@ static int jtagmkII_dragon_open_pdi(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, pinfo, &pgm->fd)==-1) {
+  if (serial_open(port, baud, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -3450,7 +3438,7 @@ static int jtagmkII_open32(PROGRAMMER * pgm, char * port)
 {
   int status;
   unsigned char buf[6], *resp;
-  union pinfo pinfo;
+  long baud;
 
   if (verbose >= 2)
     fprintf(stderr, "%s: jtagmkII_open32()\n", progname);
@@ -3461,7 +3449,7 @@ static int jtagmkII_open32(PROGRAMMER * pgm, char * port)
    * a higher baud rate, we switch to it later on, after establishing
    * the connection with the ICE.
    */
-  pinfo.baud = 19200;
+  baud = 19200;
 
   /*
    * If the port name starts with "usb", divert the serial routines
@@ -3472,9 +3460,7 @@ static int jtagmkII_open32(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev;
-    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
-    pinfo.usbinfo.flags = 0;
-    pinfo.usbinfo.pid = USB_DEVICE_JTAGICEMKII;
+    baud = USB_DEVICE_JTAGICEMKII;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
     pgm->fd.usb.rep = USBDEV_BULK_EP_READ_MKII;
     pgm->fd.usb.wep = USBDEV_BULK_EP_WRITE_MKII;
@@ -3486,7 +3472,7 @@ static int jtagmkII_open32(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, pinfo, &pgm->fd)==-1) {
+  if (serial_open(port, baud, &pgm->fd)==-1) {
     return -1;
   }
 

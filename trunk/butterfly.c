@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: butterfly.c 1276 2014-02-21 13:44:11Z joerg_wunsch $ */
+/* $Id: butterfly.c 1227 2013-09-13 19:37:54Z joerg_wunsch $ */
 
 /*
  * avrdude interface for the serial programming mode of the Atmel butterfly
@@ -386,7 +386,6 @@ static void butterfly_enable(PROGRAMMER * pgm)
 
 static int butterfly_open(PROGRAMMER * pgm, char * port)
 {
-  union pinfo pinfo;
   strcpy(pgm->port, port);
   /*
    *  If baudrate was not specified use 19200 Baud
@@ -394,8 +393,7 @@ static int butterfly_open(PROGRAMMER * pgm, char * port)
   if(pgm->baudrate == 0) {
     pgm->baudrate = 19200;
   }
-  pinfo.baud = pgm->baudrate;
-  if (serial_open(port, pinfo, &pgm->fd)==-1) {
+  if (serial_open(port, pgm->baudrate, &pgm->fd)==-1) {
     return -1;
   }
 
