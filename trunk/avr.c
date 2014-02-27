@@ -850,6 +850,12 @@ int avr_write(PROGRAMMER * pgm, AVRPART * p, char * memtype, int size,
   unsigned char    cmd[4];
   AVRMEM         * m;
 
+  if (verbose >= 3) {
+    fprintf(stderr,
+            "avr_write(): %d bytes\n",
+            size);
+  }
+
   m = avr_locate_mem(p, memtype);
   if (m == NULL) {
     fprintf(stderr, "No \"%s\" memory for part %s\n",
@@ -954,6 +960,11 @@ int avr_write(PROGRAMMER * pgm, AVRPART * p, char * memtype, int size,
           rc = pgm->page_erase(pgm, p, m, pageaddr);
         if (rc >= 0)
           rc = pgm->paged_write(pgm, p, m, m->page_size, pageaddr, m->page_size);
+        if (verbose >= 3) {
+          fprintf(stderr,
+            "avr_write(): paged write returned %d\n",
+            rc);
+        }
         if (rc < 0)
           /* paged write failed, fall back to byte-at-a-time write below */
           failure = 1;
@@ -1257,7 +1268,8 @@ void report_progress (int completed, int total, char *hdr)
   if (percent > 100)
     percent = 100;
 
-  if (percent > last) {
+  /* update every 4% */
+  if (percent > last + 3) {
     last = percent;
     update_progress (percent, t - start_time, hdr);
   }
