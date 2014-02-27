@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: avr910.c 1276 2014-02-21 13:44:11Z joerg_wunsch $ */
+/* $Id: avr910.c 1206 2013-09-03 21:43:24Z joerg_wunsch $ */
 
 /*
  * avrdude interface for Atmel Low Cost Serial programmers which adher to the
@@ -375,7 +375,6 @@ static int avr910_parseextparms(PROGRAMMER * pgm, LISTID extparms)
 
 static int avr910_open(PROGRAMMER * pgm, char * port)
 {
-  union pinfo pinfo;
   /*
    *  If baudrate was not specified use 19.200 Baud
    */
@@ -384,8 +383,7 @@ static int avr910_open(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  pinfo.baud = pgm->baudrate;
-  if (serial_open(port, pinfo, &pgm->fd)==-1) {
+  if (serial_open(port, pgm->baudrate, &pgm->fd)==-1) {
     return -1;
   }
 
