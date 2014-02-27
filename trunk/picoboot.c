@@ -42,8 +42,9 @@ struct frame{
   uint8_t command;
 };
 
-/* due to ACK buffering, keep MAX_FRAMES <= serial fifo size */
-#define MAX_FRAMES 8
+/* due to ACK buffering, keep MAX_FRAMES <= serial fifo size 
+ * also keep MAX_FRAMES <= chip page size in bytes */
+#define MAX_FRAMES 32
 
 /* 2 byte virtual reset vector + 64 bytes code = 66 */
 #define BOOTLOADER_SIZE 66
@@ -114,7 +115,7 @@ static int picoboot_open(PROGRAMMER * pgm, char * port)
 {
   DEBUG("PICOBOOT: picoboot_open()\n");
   strcpy(pgm->port, port);
-  if (serial_open(port, pgm->baudrate? pgm->baudrate: 460800, &pgm->fd)==-1) {
+  if (serial_open(port, pgm->baudrate? pgm->baudrate: 230400, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -166,8 +167,6 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
                               unsigned int page_size,
                               unsigned int addr, unsigned int num_bytes)
 {
-  const uint8_t reset_vec_lo = 0xdf;   /* rjmp BootStart */
-  const uint8_t reset_vec_hi = 0xcf;   /* rjmp BootStart */
   uint16_t appstart, vrst_vec_addr =
     m->size - BOOTLOADER_SIZE;
   struct frame f;
@@ -220,7 +219,7 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
     return -1;
   }
 
-  if ( addr >= vrst_vec_addr) {
+  if ( addr > vrst_vec_addr) {
     fprintf(stderr,
       "\n%s: picoboot_paged_write(): error, "
       "attempt to write to bootloader memory.\n",
@@ -236,7 +235,7 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
   if ( addr == 0 ) {
     uint16_t vrst_vec_page = vrst_vec_addr - page_size +2;
 
-    /* save and redirect reset vector */
+    /* save and redirect reset app vector */
     appstart = *((uint8_t *)m->buf) | 
                *((uint8_t *)m->buf +1 ) << 8; 
     /* validate rjmp at reset vector */
@@ -248,8 +247,9 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
       exit (1);
     } 
 
-    *((uint8_t *)m->buf) = reset_vec_lo;
-    *((uint8_t *)m->buf+1) = reset_vec_hi;
+    /* place rjmp to bootloader at reset vector */
+    m->buf[0] = (vrst_vec_addr/2) & 0x00FF;
+    m->buf[1] = ((vrst_vec_addr/2) | 0xC000) >> 8;
 
     /* calculate new rjmp for appstart */
     appstart = 0xc000 |
