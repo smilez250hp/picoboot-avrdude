@@ -83,8 +83,8 @@ libavrdude_a_AR = $(AR) $(ARFLAGS)
 libavrdude_a_LIBADD =
 am_libavrdude_a_OBJECTS = libavrdude_a-config_gram.$(OBJEXT) \
 	libavrdude_a-lexer.$(OBJEXT) libavrdude_a-arduino.$(OBJEXT) \
-	libavrdude_a-avr.$(OBJEXT) libavrdude_a-avr910.$(OBJEXT) \
-	libavrdude_a-avrftdi.$(OBJEXT) \
+	libavrdude_a-aspspi.$(OBJEXT) libavrdude_a-avr.$(OBJEXT) \
+	libavrdude_a-avr910.$(OBJEXT) libavrdude_a-avrftdi.$(OBJEXT) \
 	libavrdude_a-avrftdi_tpi.$(OBJEXT) \
 	libavrdude_a-avrpart.$(OBJEXT) libavrdude_a-bitbang.$(OBJEXT) \
 	libavrdude_a-buspirate.$(OBJEXT) \
@@ -259,6 +259,7 @@ PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
+PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
@@ -367,6 +368,8 @@ libavrdude_a_SOURCES = \
 	lexer.l \
 	arduino.h \
 	arduino.c \
+	aspspi.h \
+	aspspi.c \
 	avr.c \
 	avr.h \
 	avr910.c \
@@ -585,6 +588,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/avrdude-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/avrdude-term.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-arduino.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-aspspi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-avr.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-avr910.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libavrdude_a-avrftdi.Po@am__quote@
@@ -683,6 +687,20 @@ libavrdude_a-arduino.obj: arduino.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='arduino.c' object='libavrdude_a-arduino.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-arduino.obj `if test -f 'arduino.c'; then $(CYGPATH_W) 'arduino.c'; else $(CYGPATH_W) '$(srcdir)/arduino.c'; fi`
+
+libavrdude_a-aspspi.o: aspspi.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-aspspi.o -MD -MP -MF $(DEPDIR)/libavrdude_a-aspspi.Tpo -c -o libavrdude_a-aspspi.o `test -f 'aspspi.c' || echo '$(srcdir)/'`aspspi.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-aspspi.Tpo $(DEPDIR)/libavrdude_a-aspspi.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='aspspi.c' object='libavrdude_a-aspspi.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-aspspi.o `test -f 'aspspi.c' || echo '$(srcdir)/'`aspspi.c
+
+libavrdude_a-aspspi.obj: aspspi.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-aspspi.obj -MD -MP -MF $(DEPDIR)/libavrdude_a-aspspi.Tpo -c -o libavrdude_a-aspspi.obj `if test -f 'aspspi.c'; then $(CYGPATH_W) 'aspspi.c'; else $(CYGPATH_W) '$(srcdir)/aspspi.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libavrdude_a-aspspi.Tpo $(DEPDIR)/libavrdude_a-aspspi.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='aspspi.c' object='libavrdude_a-aspspi.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -c -o libavrdude_a-aspspi.obj `if test -f 'aspspi.c'; then $(CYGPATH_W) 'aspspi.c'; else $(CYGPATH_W) '$(srcdir)/aspspi.c'; fi`
 
 libavrdude_a-avr.o: avr.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libavrdude_a_CPPFLAGS) $(CPPFLAGS) $(libavrdude_a_CFLAGS) $(CFLAGS) -MT libavrdude_a-avr.o -MD -MP -MF $(DEPDIR)/libavrdude_a-avr.Tpo -c -o libavrdude_a-avr.o `test -f 'avr.c' || echo '$(srcdir)/'`avr.c
@@ -1607,7 +1625,7 @@ distcheck: dist
 	*.zip*) \
 	  unzip $(distdir).zip ;;\
 	esac
-	chmod -R a-w $(distdir); chmod u+w $(distdir)
+	chmod -R a-w $(distdir); chmod a+w $(distdir)
 	mkdir $(distdir)/_build
 	mkdir $(distdir)/_inst
 	chmod a-w $(distdir)

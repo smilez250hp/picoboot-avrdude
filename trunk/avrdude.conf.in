@@ -352,7 +352,7 @@ programmer
 # http://code.google.com/p/picoboot/
 programmer
   id    = "picoboot";
-  desc  = "Picoboot";
+  desc  = "Picoboot serial bootloader";
   type  = "picoboot";
   connection_type = serial;
 ;
@@ -363,6 +363,7 @@ programmer
   type  = "arduino";
   connection_type = serial;
 ;
+
 # this will interface with the chips on these programmers:
 #
 # http://real.kiev.ua/old/avreal/en/adapters
@@ -783,6 +784,18 @@ programmer
 
   # NIBObee (only if -P nibobee is given on command line)
   # see below "nibobee"
+;
+
+programmer
+  id    = "aspspi";
+  desc  = "USBasp in SPI debug mode";
+  type  = "aspspi";
+  connection_type = usb;
+
+  usbvid     = 0x16C0; # VOTI
+  usbpid     = 0x05DC; # Obdev's free shared PID
+  usbvendor  = "www.fischl.de";
+  usbproduct = "USBasp";
 ;
 
 programmer
