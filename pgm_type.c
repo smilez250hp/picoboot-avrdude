@@ -29,6 +29,7 @@
 #include "pgm_type.h"
 
 #include "arduino.h"
+#include "aspspi.h"
 #include "avr.h"
 #include "avr910.h"
 #include "avrftdi.h"
@@ -54,6 +55,7 @@
 
 const PROGRAMMER_TYPE const programmers_types[] = {
         {"arduino", arduino_initpgm, arduino_desc},
+        {"aspspi", aspspi_initpgm, aspspi_desc},
         {"avr910", avr910_initpgm, avr910_desc},
         {"avrftdi", avrftdi_initpgm, avrftdi_desc},
         {"buspirate", buspirate_initpgm, buspirate_desc},
