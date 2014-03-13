@@ -114,8 +114,10 @@ int picoboot_buffered_send(union filedescriptor *fd, struct frame* f)
 static int picoboot_open(PROGRAMMER * pgm, char * port)
 {
   DEBUG("PICOBOOT: picoboot_open()\n");
+  union pinfo pinfo;
   strcpy(pgm->port, port);
-  if (serial_open(port, pgm->baudrate? pgm->baudrate: 230400, &pgm->fd)==-1) {
+  pinfo.baud = pgm->baudrate? pgm->baudrate: 230400;
+  if (serial_open(port, pinfo, &pgm->fd)==-1) {
     return -1;
   }
 

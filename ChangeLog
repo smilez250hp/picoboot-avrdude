@@ -1,3 +1,99 @@
+2014-03-13  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* configure.ac (AC_INIT): Bump version for post-6.1.
+
+2014-03-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* configure.ac (AC_INIT): Bump version to 6.1.
+
+2014-03-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* pgm.c (pgm_free): Cleanup police: destroy the p->usbpid
+	list when freeing the programmer struct.
+
+2014-03-12  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	bug #40782: Verify errors for object size > 16 k on x32e5 due
+	to typo in avrdude.conf
+	* avrdude.conf.in (ATmega8E5, ATmega32E5): fix boot location
+
+2014-02-28  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* avrdude.conf.in (atmelice, atmelice_pdi, atmelice_dw, atmelice_isp):
+	New entries.
+	* avrdude.1: Document the Atmel-ICE addition.
+	* doc/avrdude.texi: (Dito.)
+	* usbdevs.c (USB_DEVICE_ATMEL_ICE): New entry.
+
+2014-02-28  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* main.c: Bump copyright year.
+
+2014-02-28  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* jtag3.c (jtag3_recv): avoid memmov'ing more data than available
+
+2014-02-27  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* avrdude.1: Documentation update for EDBG.
+	* doc/avrdude.texi: (Dito.)
+
+2014-02-27  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* jtag3.c: For EDBG protocol, always use 512-byte block I/O.  The
+	lower layers will split this according to the EP's maxsize.  This
+	makes it work over USB 1.1 connections (albeit very slowly, due to
+	the interrupt transfers used).
+
+2014-02-27  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* config_gram.y: Turn the usbpid parameter of the programmer into
+	a list of PIDs.  Make the JTAGICE3 programmer handle a list of
+	PIDs, by trying each of them in sequence.  Use a single, central
+	jtag3_open_common() function to handle the common code of all
+	jtag3_open_* functions.  Centralize all USB VID/PID definitions in
+	usbdevs.h.
+	* flip1.c: (Dito.)
+	* ft245r.c: (Dito.)
+	* stk500v2.c: (Dito.)
+	* jtag3.c: (Dito.)
+	* jtag3.h: (Dito.)
+	* flip2.c: (Dito.)
+	* usbdevs.h: (Dito.)
+	* pgm.c: (Dito.)
+	* serial.h: (Dito.)
+	* pgm.h: (Dito.)
+	* usbtiny.c: (Dito.)
+	* usbasp.c: (Dito.)
+	* avrftdi.c: (Dito.)
+	* usbtiny.h: (Dito.)
+	* avrdude.conf.in: (Dito.)
+	* usbasp.h: (Dito.)
+	* usb_libusb.c: (Dito.)
+
+2014-02-27  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* usb_libusb.c (usbdev_open): Replace all calls to exit(1) by
+	return -1
+
+2014-02-26  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* jtag3_private.h: Add EDBG/CMSIS-DAP specific constants.
+	* jtag3.c: Add EDBG/CMSIS-DAP protocol implementation.
+	* serial.h: (Dito.)
+	* usbdevs.h: (Dito.)
+	* usb_libusb.c: (Dito.)
+	* configure.ac: (Dito.)
+	* avrdude.conf.in: Add JTAGICE3 and XplainedPro entries using
+	EDBG.
+	* configure.ac: Bump version date.
+
+2014-02-22  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
+
+	* usb_libusb.c (usbdev_recv_frame): Fix a bug where a new recv
+	request was issued even though all desired data had aldready
+	been received.
+
 2014-02-21  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
 
 	* serial.h: Change the second parameter of the ser_open method

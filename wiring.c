@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: wiring.c 1107 2012-11-20 14:03:50Z joerg_wunsch $ */
+/* $Id: wiring.c 1276 2014-02-21 13:44:11Z joerg_wunsch $ */
 
 /*
  * avrdude interface for Wiring bootloaders
@@ -153,9 +153,11 @@ static int wiring_open(PROGRAMMER * pgm, char * port)
 {
   int timetosnooze;
   void *mycookie = STK500V2PDATA(pgm)->chained_pdata;
+  union pinfo pinfo;
 
   strcpy(pgm->port, port);
-  serial_open(port, pgm->baudrate ? pgm->baudrate: 115200, &pgm->fd);
+  pinfo.baud = pgm->baudrate ? pgm->baudrate: 115200;
+  serial_open(port, pinfo, &pgm->fd);
 
   /* If we have a snoozetime, then we wait and do NOT toggle DTR/RTS */
 

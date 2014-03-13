@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: pgm.h 1255 2013-12-15 12:57:13Z springob $ */
+/* $Id: pgm.h 1283 2014-02-27 13:06:03Z joerg_wunsch $ */
 
 #ifndef pgm_h
 #define pgm_h
@@ -76,7 +76,8 @@ typedef struct programmer_t {
   int ppidata;
   int ppictrl;
   int baudrate;
-  int usbvid, usbpid;
+  int usbvid;
+  LISTID usbpid;
   char usbdev[PGM_USBSTRINGLEN], usbsn[PGM_USBSTRINGLEN];
   char usbvendor[PGM_USBSTRINGLEN], usbproduct[PGM_USBSTRINGLEN];
   double bitclock;    /* JTAG ICE clock period in microseconds */

@@ -16,22 +16,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: usbasp.h 1107 2012-11-20 14:03:50Z joerg_wunsch $ */
+/* $Id: usbasp.h 1283 2014-02-27 13:06:03Z joerg_wunsch $ */
 
 #ifndef usbasp_h
 #define usbasp_h
 
 #include "avrpart.h"
-
-/* USB identifiers */
-#define	USBASP_SHARED_VID   0x16C0  /* VOTI */
-#define	USBASP_SHARED_PID   0x05DC  /* Obdev's free shared PID */
-
-#define	USBASP_OLD_VID      0x03EB  /* ATMEL */
-#define	USBASP_OLD_PID	    0xC7B4  /* (unoffical) USBasp */
-
-#define	USBASP_NIBOBEE_VID  0x16C0  /* VOTI */
-#define	USBASP_NIBOBEE_PID  0x092F  /* NIBObee PID */
 
 /* USB function call identifiers */
 #define USBASP_FUNC_CONNECT    1
