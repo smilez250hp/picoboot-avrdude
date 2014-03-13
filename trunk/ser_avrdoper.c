@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: ser_avrdoper.c 1107 2012-11-20 14:03:50Z joerg_wunsch $ */
+/* $Id: ser_avrdoper.c 1276 2014-02-21 13:44:11Z joerg_wunsch $ */
 
 /*
  * Serial Interface emulation for USB programmer "AVR-Doper" in HID mode.
@@ -510,7 +510,7 @@ static char *usbErrorText(int usbErrno)
 
 /* ------------------------------------------------------------------------- */
 
-static int avrdoper_open(char *port, long baud, union filedescriptor *fdp)
+static int avrdoper_open(char *port, union pinfo pinfo, union filedescriptor *fdp)
 {
     int rval;
     char *vname = "obdev.at";

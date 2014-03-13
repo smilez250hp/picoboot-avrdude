@@ -1,7 +1,7 @@
 /*
  * avrdude - A Downloader/Uploader for AVR device programmers
  * Copyright (C) 2000-2005  Brian S. Dean <bsd@bsdhome.com>
- * Copyright 2007-2013 Joerg Wunsch <j@uriah.heep.sax.de>
+ * Copyright 2007-2014 Joerg Wunsch <j@uriah.heep.sax.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: main.c 1247 2013-09-22 21:23:12Z joerg_wunsch $ */
+/* $Id: main.c 1287 2014-02-28 14:26:24Z joerg_wunsch $ */
 
 /*
  * Code to program an Atmel AVR device through one of the supported
@@ -633,7 +633,7 @@ int main(int argc, char * argv [])
     fprintf(stderr,
             "\n%s: Version %s, compiled on %s at %s\n"
             "%sCopyright (c) 2000-2005 Brian Dean, http://www.bdmicro.com/\n"
-	    "%sCopyright (c) 2007-2009 Joerg Wunsch\n\n",
+	    "%sCopyright (c) 2007-2014 Joerg Wunsch\n\n",
             progname, version, __DATE__, __TIME__, progbuf, progbuf);
   }
 
@@ -1391,9 +1391,9 @@ main_exit:
     pgm->disable(pgm);
 
     pgm->rdy_led(pgm, OFF);
-  }
 
-  pgm->close(pgm);
+    pgm->close(pgm);
+  }
 
   if (quell_progress < 2) {
     fprintf(stderr, "\n%s done.  Thank you.\n\n", progname);

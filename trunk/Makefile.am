@@ -17,7 +17,7 @@
 #
 
 #
-# $Id: Makefile.am 1175 2013-05-15 18:55:19Z rliebscher $
+# $Id: Makefile.am 1265 2014-01-16 07:57:36Z joerg_wunsch $
 #
 
 EXTRA_DIST   = \
@@ -32,6 +32,7 @@ EXTRA_DIST   = \
 	ChangeLog-2010 \
 	ChangeLog-2011 \
 	ChangeLog-2012 \
+	ChangeLog-2013 \
 	avrdude.1 \
 	avrdude.spec \
 	bootstrap
@@ -89,8 +90,6 @@ libavrdude_a_SOURCES = \
 	lexer.l \
 	arduino.h \
 	arduino.c \
-	aspspi.h \
-	aspspi.c \
 	avr.c \
 	avr.h \
 	avr910.c \
@@ -115,8 +114,14 @@ libavrdude_a_SOURCES = \
 	confwin.h \
 	crc16.c \
 	crc16.h \
+	dfu.c \
+	dfu.h \
 	fileio.c \
 	fileio.h \
+	flip1.c \
+	flip1.h \
+	flip2.c \
+	flip2.h \
 	freebsd_ppi.h \
 	ft245r.c \
 	ft245r.h \

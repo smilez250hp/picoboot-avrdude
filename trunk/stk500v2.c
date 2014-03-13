@@ -19,7 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: stk500v2.c 1229 2013-09-13 21:32:00Z joerg_wunsch $ */
+/* $Id: stk500v2.c 1283 2014-02-27 13:06:03Z joerg_wunsch $ */
 /* Based on Id: stk500.c,v 1.46 2004/12/22 01:52:45 bdean Exp */
 
 /*
@@ -602,8 +602,13 @@ static int stk500v2_jtag3_recv(PROGRAMMER * pgm, unsigned char *msg,
             progname);
     return -1;
   }
+  /* Getting more data than expected is a normal case for the EDBG
+     implementation of JTAGICE3, as they always request a full 512
+     octets from the ICE.  Thus, only complain at high verbose
+     levels. */
   if (rv - 1 > maxsize) {
-    fprintf(stderr,
+    if (verbose > 2)
+      fprintf(stderr,
             "%s: stk500v2_jtag3_recv(): got %u bytes, have only room for %u bytes\n",
             progname, (unsigned)rv - 1, (unsigned)maxsize);
     rv = maxsize;
@@ -1587,12 +1592,12 @@ static void stk500v2_enable(PROGRAMMER * pgm)
 
 static int stk500v2_open(PROGRAMMER * pgm, char * port)
 {
-  long baud = 115200;
+  union pinfo pinfo = { .baud = 115200 };
 
   DEBUG("STK500V2: stk500v2_open()\n");
 
   if (pgm->baudrate)
-    baud = pgm->baudrate;
+    pinfo.baud = pgm->baudrate;
 
   PDATA(pgm)->pgmtype = PGMTYPE_UNKNOWN;
 
@@ -1615,7 +1620,9 @@ static int stk500v2_open(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev_frame;
-    baud = USB_DEVICE_AVRISPMKII;
+    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
+    pinfo.usbinfo.flags = 0;
+    pinfo.usbinfo.pid = USB_DEVICE_AVRISPMKII;
     PDATA(pgm)->pgmtype = PGMTYPE_AVRISP_MKII;
     pgm->set_sck_period = stk500v2_set_sck_period_mk2;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
@@ -1629,7 +1636,7 @@ static int stk500v2_open(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, baud, &pgm->fd)==-1) {
+  if (serial_open(port, pinfo, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -1653,12 +1660,12 @@ static int stk500v2_open(PROGRAMMER * pgm, char * port)
 
 static int stk600_open(PROGRAMMER * pgm, char * port)
 {
-  long baud = 115200;
+  union pinfo pinfo = { .baud = 115200 };
 
   DEBUG("STK500V2: stk600_open()\n");
 
   if (pgm->baudrate)
-    baud = pgm->baudrate;
+    pinfo.baud = pgm->baudrate;
 
   PDATA(pgm)->pgmtype = PGMTYPE_UNKNOWN;
 
@@ -1671,7 +1678,9 @@ static int stk600_open(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev_frame;
-    baud = USB_DEVICE_STK600;
+    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
+    pinfo.usbinfo.flags = 0;
+    pinfo.usbinfo.pid = USB_DEVICE_STK600;
     PDATA(pgm)->pgmtype = PGMTYPE_STK600;
     pgm->set_sck_period = stk600_set_sck_period;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
@@ -1685,7 +1694,7 @@ static int stk600_open(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, baud, &pgm->fd)==-1) {
+  if (serial_open(port, pinfo, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -3385,7 +3394,7 @@ static int stk500v2_perform_osccal(PROGRAMMER * pgm)
  */
 static int stk500v2_jtagmkII_open(PROGRAMMER * pgm, char * port)
 {
-  long baud;
+  union pinfo pinfo;
   void *mycookie;
   int rv;
 
@@ -3398,7 +3407,7 @@ static int stk500v2_jtagmkII_open(PROGRAMMER * pgm, char * port)
    * a higher baud rate, we switch to it later on, after establishing
    * the connection with the ICE.
    */
-  baud = 19200;
+  pinfo.baud = 19200;
 
   /*
    * If the port name starts with "usb", divert the serial routines
@@ -3409,7 +3418,9 @@ static int stk500v2_jtagmkII_open(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev;
-    baud = USB_DEVICE_JTAGICEMKII;
+    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
+    pinfo.usbinfo.flags = 0;
+    pinfo.usbinfo.pid = USB_DEVICE_JTAGICEMKII;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
     pgm->fd.usb.rep = USBDEV_BULK_EP_READ_MKII;
     pgm->fd.usb.wep = USBDEV_BULK_EP_WRITE_MKII;
@@ -3421,7 +3432,7 @@ static int stk500v2_jtagmkII_open(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, baud, &pgm->fd)==-1) {
+  if (serial_open(port, pinfo, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -3499,7 +3510,7 @@ static void stk500v2_jtag3_close(PROGRAMMER * pgm)
  */
 static int stk500v2_dragon_isp_open(PROGRAMMER * pgm, char * port)
 {
-  long baud;
+  union pinfo pinfo;
   void *mycookie;
 
   if (verbose >= 2)
@@ -3511,7 +3522,7 @@ static int stk500v2_dragon_isp_open(PROGRAMMER * pgm, char * port)
    * a higher baud rate, we switch to it later on, after establishing
    * the connection with the ICE.
    */
-  baud = 19200;
+  pinfo.baud = 19200;
 
   /*
    * If the port name starts with "usb", divert the serial routines
@@ -3522,7 +3533,9 @@ static int stk500v2_dragon_isp_open(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev;
-    baud = USB_DEVICE_AVRDRAGON;
+    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
+    pinfo.usbinfo.flags = 0;
+    pinfo.usbinfo.pid = USB_DEVICE_AVRDRAGON;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
     pgm->fd.usb.rep = USBDEV_BULK_EP_READ_MKII;
     pgm->fd.usb.wep = USBDEV_BULK_EP_WRITE_MKII;
@@ -3534,7 +3547,7 @@ static int stk500v2_dragon_isp_open(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, baud, &pgm->fd)==-1) {
+  if (serial_open(port, pinfo, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -3576,7 +3589,7 @@ static int stk500v2_dragon_isp_open(PROGRAMMER * pgm, char * port)
  */
 static int stk500v2_dragon_hv_open(PROGRAMMER * pgm, char * port)
 {
-  long baud;
+  union pinfo pinfo;
   void *mycookie;
 
   if (verbose >= 2)
@@ -3588,7 +3601,7 @@ static int stk500v2_dragon_hv_open(PROGRAMMER * pgm, char * port)
    * a higher baud rate, we switch to it later on, after establishing
    * the connection with the ICE.
    */
-  baud = 19200;
+  pinfo.baud = 19200;
 
   /*
    * If the port name starts with "usb", divert the serial routines
@@ -3599,7 +3612,9 @@ static int stk500v2_dragon_hv_open(PROGRAMMER * pgm, char * port)
   if (strncmp(port, "usb", 3) == 0) {
 #if defined(HAVE_LIBUSB)
     serdev = &usb_serdev;
-    baud = USB_DEVICE_AVRDRAGON;
+    pinfo.usbinfo.vid = USB_VENDOR_ATMEL;
+    pinfo.usbinfo.flags = 0;
+    pinfo.usbinfo.pid = USB_DEVICE_AVRDRAGON;
     pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_MKII;
     pgm->fd.usb.rep = USBDEV_BULK_EP_READ_MKII;
     pgm->fd.usb.wep = USBDEV_BULK_EP_WRITE_MKII;
@@ -3611,7 +3626,7 @@ static int stk500v2_dragon_hv_open(PROGRAMMER * pgm, char * port)
   }
 
   strcpy(pgm->port, port);
-  if (serial_open(port, baud, &pgm->fd)==-1) {
+  if (serial_open(port, pinfo, &pgm->fd)==-1) {
     return -1;
   }
 
@@ -3652,41 +3667,14 @@ static int stk500v2_dragon_hv_open(PROGRAMMER * pgm, char * port)
  */
 static int stk500v2_jtag3_open(PROGRAMMER * pgm, char * port)
 {
-  long baud;
   void *mycookie;
   int rv;
 
   if (verbose >= 2)
     fprintf(stderr, "%s: stk500v2_jtag3_open()\n", progname);
 
-  /*
-   * The serial_open() function for USB overrides
-   * the meaning of the "baud" parameter to be the USB device ID to
-   * search for.
-   */
-  if (strncmp(port, "usb", 3) == 0) {
-#if defined(HAVE_LIBUSB)
-    serdev = &usb_serdev_frame;
-    baud = USB_DEVICE_JTAGICE3;
-    pgm->fd.usb.max_xfer = USBDEV_MAX_XFER_3;
-    pgm->fd.usb.rep = USBDEV_BULK_EP_READ_3;
-    pgm->fd.usb.wep = USBDEV_BULK_EP_WRITE_3;
-    pgm->fd.usb.eep = USBDEV_EVT_EP_READ_3;
-#else
-    fprintf(stderr, "avrdude was compiled without usb support.\n");
+  if (jtag3_open_common(pgm, port) < 0)
     return -1;
-#endif
-  }
-
-  strcpy(pgm->port, port);
-  if (serial_open(port, baud, &pgm->fd)==-1) {
-    return -1;
-  }
-
-  /*
-   * drain any extraneous input
-   */
-  stk500v2_drain(pgm, 0);
 
   mycookie = pgm->cookie;
   pgm->cookie = PDATA(pgm)->chained_pdata;

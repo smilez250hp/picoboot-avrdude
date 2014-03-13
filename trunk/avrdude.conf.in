@@ -1,4 +1,4 @@
-# $Id: avrdude.conf.in 1256 2014-01-13 20:42:27Z rliebscher $ -*- text -*-
+# $Id: avrdude.conf.in 1289 2014-03-12 21:08:05Z joerg_wunsch $ -*- text -*-
 #
 # AVRDUDE Configuration File
 #
@@ -31,7 +31,7 @@
 #       pgmled   = <num> ;                          # pin number
 #       vfyled   = <num> ;                          # pin number
 #       usbvid   = <hexnum>;                        # USB VID (Vendor ID)
-#       usbpid   = <hexnum>;                        # USB PID (Product ID)
+#       usbpid   = <hexnum> [, <hexnum> ...]        # USB PID (Product ID) (1)
 #       usbdev   = <interface>;                     # USB interface or other device info 
 #       usbvendor = <vendorname>;                   # USB Vendor Name
 #       usbproduct = <productname>;                 # USB Product Name
@@ -41,6 +41,8 @@
 #        For a pin list all pins must be inverted.
 #        A single pin can be specified as usual = ~ <num>, for lists
 #        specify it as follows = ~ ( <num> [, <num2> ... ] ) .
+#
+#        (1) Not all programmer types can process a list of PIDs.
 #     ;
 #
 #   part
@@ -54,6 +56,7 @@
 #       stk500_devcode   = <num> ;                # numeric
 #       avr910_devcode   = <num> ;                # numeric
 #       signature        = <num> <num> <num> ;    # signature bytes
+#       usbpid           = <num> ;                # DFU USB PID
 #       chip_erase_delay = <num> ;                # micro-seconds
 #       reset            = dedicated | io;
 #       retry_pulse      = reset | sck;
@@ -352,7 +355,7 @@ programmer
 # http://code.google.com/p/picoboot/
 programmer
   id    = "picoboot";
-  desc  = "Picoboot serial bootloader";
+  desc  = "Picoboot";
   type  = "picoboot";
   connection_type = serial;
 ;
@@ -363,7 +366,6 @@ programmer
   type  = "arduino";
   connection_type = serial;
 ;
-
 # this will interface with the chips on these programmers:
 #
 # http://real.kiev.ua/old/avreal/en/adapters
@@ -787,18 +789,6 @@ programmer
 ;
 
 programmer
-  id    = "aspspi";
-  desc  = "USBasp in SPI debug mode";
-  type  = "aspspi";
-  connection_type = usb;
-
-  usbvid     = 0x16C0; # VOTI
-  usbpid     = 0x05DC; # Obdev's free shared PID
-  usbvendor  = "www.fischl.de";
-  usbproduct = "USBasp";
-;
-
-programmer
   id    = "nibobee";
   desc  = "NIBObee";
   type  = "usbasp";
@@ -1014,6 +1004,7 @@ programmer
   desc  = "Atmel AVR JTAGICE3 in JTAG mode";
   type  = "jtagice3";
   connection_type = usb;
+  usbpid = 0x2110, 0x2140;
 ;
 
 programmer
@@ -1021,6 +1012,7 @@ programmer
   desc  = "Atmel AVR JTAGICE3 in PDI mode";
   type  = "jtagice3_pdi";
   connection_type = usb;
+  usbpid = 0x2110, 0x2140;
 ;
 
 programmer
@@ -1028,6 +1020,7 @@ programmer
   desc  = "Atmel AVR JTAGICE3 in debugWIRE mode";
   type  = "jtagice3_dw";
   connection_type = usb;
+  usbpid = 0x2110, 0x2140;
 ;
 
 programmer
@@ -1035,6 +1028,47 @@ programmer
   desc  = "Atmel AVR JTAGICE3 in ISP mode";
   type  = "jtagice3_isp";
   connection_type = usb;
+  usbpid = 0x2110, 0x2140;
+;
+
+programmer
+  id    = "xplainedpro";
+  desc  = "Atmel AVR XplainedPro in JTAG mode";
+  type  = "jtagice3";
+  connection_type = usb;
+  usbpid = 0x2111;
+;
+
+programmer
+  id    = "atmelice";
+  desc  = "Atmel-ICE (ARM/AVR) in JTAG mode";
+  type  = "jtagice3";
+  connection_type = usb;
+  usbpid = 0x2141;
+;
+
+programmer
+  id    = "atmelice_pdi";
+  desc  = "Atmel-ICE (ARM/AVR) in PDI mode";
+  type  = "jtagice3_pdi";
+  connection_type = usb;
+  usbpid = 0x2141;
+;
+
+programmer
+  id    = "atmelice_dw";
+  desc  = "Atmel-ICE (ARM/AVR) in debugWIRE mode";
+  type  = "jtagice3_dw";
+  connection_type = usb;
+  usbpid = 0x2141;
+;
+
+programmer
+  id    = "atmelice_isp";
+  desc  = "Atmel-ICE (ARM/AVR) in ISP mode";
+  type  = "jtagice3_isp";
+  connection_type = usb;
+  usbpid = 0x2141;
 ;
 
 
@@ -1049,6 +1083,20 @@ programmer
   id    = "pickit2";
   desc  = "MicroChip's PICkit2 Programmer";
   type  = "pickit2";
+  connection_type = usb;
+;
+
+programmer
+  id    = "flip1";
+  desc  = "FLIP USB DFU protocol version 1 (doc7618)";
+  type  = "flip1";
+  connection_type = usb;
+;
+
+programmer
+  id    = "flip2";
+  desc  = "FLIP USB DFU protocol version 2 (AVR4023)";
+  type  = "flip2";
   connection_type = usb;
 ;
 
@@ -10064,7 +10112,7 @@ part
     desc             = "ATmega2560";
     signature        = 0x1e 0x98 0x01;
     has_jtag         = yes;
-#    stk500_devcode   = 0xB2;
+    stk500_devcode   = 0xB2;
 #    avr910_devcode   = 0x43;
     chip_erase_delay = 9000;
     pagel            = 0xD7;
@@ -10325,8 +10373,42 @@ part parent "m2561"
     id               = "m256rfr2";
     desc             = "ATmega256RFR2";
     signature        = 0x1e 0xa8 0x02;
-    chip_erase_delay = 55000;
+    chip_erase_delay = 18500;
     bs2              = 0xE2;
+
+    memory "eeprom"
+        paged           = no; /* leave this "no" */
+        page_size       = 8;  /* for parallel programming */
+        size            = 8192;
+        min_write_delay = 13000;
+        max_write_delay = 13000;
+        readback_p1     = 0x00;
+        readback_p2     = 0x00;
+        read            = "  1   0   1   0      0   0   0   0",
+                          "  x   x   x a12    a11 a10  a9  a8",
+                          " a7  a6  a5  a4     a3  a2  a1  a0",
+                          "  o   o   o   o      o   o   o   o";
+
+        write           = "  1   1   0   0      0   0   0   0",
+                          "  x   x   x a12    a11 a10  a9  a8",
+                          " a7  a6  a5  a4     a3  a2  a1  a0",
+                          "  i   i   i   i      i   i   i   i";
+
+	loadpage_lo	= "  1   1   0   0      0   0   0   1",
+			  "  0   0   0   0      0   0   0   0",
+			  "  0   0   0   0      0  a2  a1  a0",
+			  "  i   i   i   i      i   i   i   i";
+
+	writepage	= "  1   1   0   0      0   0   1   0",
+			  "  0   0   x a12    a11 a10  a9  a8",
+			  " a7  a6  a5  a4     a3   0   0   0",
+			  "  x   x   x   x      x   x   x   x";
+
+	mode		= 0x41;
+	delay		= 10;
+	blocksize	= 8;
+	readsize	= 256;
+      ;
 
 
     ocdrev              = 4;
@@ -10396,6 +10478,42 @@ part parent "m128rfa1"
 	blocksize	= 256;
 	readsize	= 256;
       ;
+
+    memory "eeprom"
+        paged           = no; /* leave this "no" */
+        page_size       = 8;  /* for parallel programming */
+        size            = 2048;
+        min_write_delay = 13000;
+        max_write_delay = 13000;
+        readback_p1     = 0x00;
+        readback_p2     = 0x00;
+        read            = "  1   0   1   0      0   0   0   0",
+                          "  x   x   x   x      x a10  a9  a8",
+                          " a7  a6  a5  a4     a3  a2  a1  a0",
+                          "  o   o   o   o      o   o   o   o";
+
+        write           = "  1   1   0   0      0   0   0   0",
+                          "  x   x   x   x      x a10  a9  a8",
+                          " a7  a6  a5  a4     a3  a2  a1  a0",
+                          "  i   i   i   i      i   i   i   i";
+
+	loadpage_lo	= "  1   1   0   0      0   0   0   1",
+			  "  0   0   0   0      0   0   0   0",
+			  "  0   0   0   0      0  a2  a1  a0",
+			  "  i   i   i   i      i   i   i   i";
+
+	writepage	= "  1   1   0   0      0   0   1   0",
+			  "  0   0   x   x      x a10  a9  a8",
+			  " a7  a6  a5  a4     a3   0   0   0",
+			  "  x   x   x   x      x   x   x   x";
+
+	mode		= 0x41;
+	delay		= 10;
+	blocksize	= 8;
+	readsize	= 256;
+      ;
+
+
   ;
 
 #------------------------------------------------------------
@@ -11168,6 +11286,7 @@ part
     id               = "m32u4";
     desc             = "ATmega32U4";
     signature        = 0x1e 0x95 0x87;
+    usbpid           = 0x2ff4;
     has_jtag         = yes;
 #    stk500_devcode   = 0xB2;
 #    avr910_devcode   = 0x43;
@@ -11358,6 +11477,7 @@ part
     id               = "usb646";
     desc             = "AT90USB646";
     signature        = 0x1e 0x96 0x82;
+    usbpid           = 0x2ff9;
     has_jtag         = yes;
 #    stk500_devcode   = 0xB2;
 #    avr910_devcode   = 0x43;
@@ -11561,6 +11681,7 @@ part
     id               = "usb1286";
     desc             = "AT90USB1286";
     signature        = 0x1e 0x97 0x82;
+    usbpid           = 0x2ffb;
     has_jtag         = yes;
 #    stk500_devcode   = 0xB2;
 #    avr910_devcode   = 0x43;
@@ -11766,6 +11887,7 @@ part
     has_jtag         = no;
     has_debugwire    = yes;
     signature        = 0x1e 0x94 0x82;
+    usbpid           = 0x2ffa;
     chip_erase_delay = 9000;
     reset            = io;
     pgm_enable       = "1 0 1 0  1 1 0 0    0 1 0 1  0 0 1 1",
@@ -11952,6 +12074,7 @@ part
     has_jtag         = no;
     has_debugwire    = yes;
     signature        = 0x1e 0x93 0x82;
+    usbpid           = 0x2ff7;
     chip_erase_delay = 9000;
     reset            = io;
     pgm_enable       = "1 0 1 0  1 1 0 0    0 1 0 1  0 0 1 1",
@@ -12140,6 +12263,7 @@ part
     has_jtag         = no;
     has_debugwire    = yes;
     signature        = 0x1e 0x95 0x8a;
+    usbpid           = 0x2ff0;
     chip_erase_delay = 9000;
     reset            = io;
     pgm_enable       = "1 0 1 0  1 1 0 0    0 1 0 1  0 0 1 1",
@@ -12327,6 +12451,7 @@ part
     has_jtag         = no;
     has_debugwire    = yes;
     signature        = 0x1e 0x94 0x89;
+    usbpid           = 0x2fef;
     chip_erase_delay = 9000;
     reset            = io;
     pgm_enable       = "1 0 1 0  1 1 0 0    0 1 0 1  0 0 1 1",
@@ -12514,6 +12639,7 @@ part
     has_jtag         = no;
     has_debugwire    = yes;
     signature        = 0x1e 0x93 0x89;
+    usbpid           = 0x2fee;
     chip_erase_delay = 9000;
     reset            = io;
     pgm_enable       = "1 0 1 0  1 1 0 0    0 1 0 1  0 0 1 1",
@@ -13153,6 +13279,7 @@ part parent ".xmega"
     id		= "x16a4u";
     desc	= "ATxmega16A4U";
     signature	= 0x1e 0x94 0x41;
+    usbpid	= 0x2fe3;
 
     memory "eeprom"
         size		= 0x400;
@@ -13241,6 +13368,7 @@ part parent ".xmega"
     id		= "x32a4u";
     desc	= "ATxmega32A4U";
     signature	= 0x1e 0x95 0x41;
+    usbpid	= 0x2fe4;
 
     memory "eeprom"
         size		= 0x400;
@@ -13329,6 +13457,7 @@ part parent ".xmega"
     id		= "x64a4u";
     desc	= "ATxmega64A4U";
     signature	= 0x1e 0x96 0x46;
+    usbpid	= 0x2fe5;
 
     memory "eeprom"
         size		= 0x800;
@@ -13381,6 +13510,7 @@ part parent "x64a4u"
     id		= "x64c3";
     desc	= "ATxmega64C3";
     signature	= 0x1e 0x96 0x49;
+    usbpid	= 0x2fd6;
 ;
 
 #------------------------------------------------------------
@@ -13427,6 +13557,7 @@ part parent "x64a1"
     id		= "x64a1u";
     desc	= "ATxmega64A1U";
     signature	= 0x1e 0x96 0x4e;
+    usbpid	= 0x2fe8;
 ;
 
 #------------------------------------------------------------
@@ -13447,6 +13578,7 @@ part parent "x64a1"
     id		= "x64a3u";
     desc	= "ATxmega64A3U";
     signature	= 0x1e 0x96 0x42;
+    usbpid	= 0x2fe5;
 ;
 
 #------------------------------------------------------------
@@ -13467,6 +13599,7 @@ part parent "x64a1"
     id		= "x64b1";
     desc	= "ATxmega64B1";
     signature	= 0x1e 0x96 0x52;
+    usbpid	= 0x2fe1;
 ;
 
 #------------------------------------------------------------
@@ -13477,6 +13610,7 @@ part parent "x64a1"
     id		= "x64b3";
     desc	= "ATxmega64B3";
     signature	= 0x1e 0x96 0x51;
+    usbpid	= 0x2fdf;
 ;
 
 #------------------------------------------------------------
@@ -13487,6 +13621,7 @@ part parent ".xmega"
     id		= "x128c3";
     desc	= "ATxmega128C3";
     signature	= 0x1e 0x97 0x52;
+    usbpid	= 0x2fd7;
 
     memory "eeprom"
         size		= 0x800;
@@ -13585,6 +13720,7 @@ part parent "x128a1"
     id		= "x128a1u";
     desc	= "ATxmega128A1U";
     signature	= 0x1e 0x97 0x4c;
+    usbpid	= 0x2fed;
 ;
 
 #------------------------------------------------------------
@@ -13605,6 +13741,7 @@ part parent "x128a1"
     id		= "x128a3u";
     desc	= "ATxmega128A3U";
     signature	= 0x1e 0x97 0x42;
+    usbpid	= 0x2fe6;
 ;
 
 #------------------------------------------------------------
@@ -13673,6 +13810,7 @@ part parent ".xmega"
     id		= "x128a4u";
     desc	= "ATxmega128A4U";
     signature	= 0x1e 0x97 0x46;
+    usbpid	= 0x2fde;
 
     memory "eeprom"
         size		= 0x800;
@@ -13725,6 +13863,7 @@ part parent ".xmega"
     id		= "x128b1";
     desc	= "ATxmega128B1";
     signature	= 0x1e 0x97 0x4d;
+    usbpid	= 0x2fea;
     has_jtag	= yes;
 
     memory "eeprom"
@@ -13783,6 +13922,7 @@ part parent "x128b1"
     id		= "x128b3";
     desc	= "ATxmega128B3";
     signature	= 0x1e 0x97 0x4b;
+    usbpid	= 0x2fe0;
 ;
 
 #------------------------------------------------------------
@@ -13793,6 +13933,7 @@ part parent ".xmega"
     id		= "x192c3";
     desc	= "ATxmega192C3";
     signature	= 0x1e 0x97 0x51;
+    # usbpid	= 0x2f??;
 
     memory "eeprom"
         size		= 0x800;
@@ -13881,6 +14022,7 @@ part parent "x192a1"
     id		= "x192a3u";
     desc	= "ATxmega192A3U";
     signature	= 0x1e 0x97 0x44;
+    usbpid	= 0x2fe7;
 ;
 
 #------------------------------------------------------------
@@ -13891,6 +14033,7 @@ part parent ".xmega"
     id		= "x256c3";
     desc	= "ATxmega256C3";
     signature	= 0x1e 0x98 0x46;
+    usbpid	= 0x2fda;
 
     memory "eeprom"
         size		= 0x1000;
@@ -13979,6 +14122,7 @@ part parent "x256a1"
     id		= "x256a3u";
     desc	= "ATxmega256A3U";
     signature	= 0x1e 0x98 0x42;
+    usbpid	= 0x2fec;
 ;
 
 #------------------------------------------------------------
@@ -13999,6 +14143,7 @@ part parent "x256a1"
     id		= "x256a3bu";
     desc	= "ATxmega256A3BU";
     signature	= 0x1e 0x98 0x43;
+    usbpid	= 0x2fe2;
 ;
 
 #------------------------------------------------------------
@@ -14009,6 +14154,7 @@ part parent ".xmega"
     id		= "x384c3";
     desc	= "ATxmega384C3";
     signature	= 0x1e 0x98 0x45;
+    usbpid	= 0x2fdb;
 
     memory "eeprom"
         size		= 0x1000;
@@ -14095,7 +14241,7 @@ part parent ".xmega"
 
     memory "boot"
         size		= 0x800;
-        offset		= 0x00804000;
+        offset		= 0x00802000;
         page_size	= 0x80;
         readsize	= 0x100;
     ;
@@ -14199,7 +14345,7 @@ part parent ".xmega"
 
     memory "boot"
         size		= 0x1000;
-        offset		= 0x00804000;
+        offset		= 0x00808000;
         page_size	= 0x80;
         readsize	= 0x100;
     ;

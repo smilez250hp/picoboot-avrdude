@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: usbasp.c 1196 2013-09-02 20:22:53Z joerg_wunsch $ */
+/* $Id: usbasp.c 1283 2014-02-27 13:06:03Z joerg_wunsch $ */
 
 /*
  * Interface to the USBasp programmer.
@@ -38,6 +38,7 @@
 #include "avr.h"
 #include "pgm.h"
 #include "usbasp.h"
+#include "usbdevs.h"
 
 #if defined(HAVE_LIBUSB) || defined(HAVE_LIBUSB_1_0)
 
@@ -464,8 +465,19 @@ static int usbasp_open(PROGRAMMER * pgm, char * port)
 	    progname, port);
 
   /* usb_init will be done in usbOpenDevice */
-  if (usbOpenDevice(&PDATA(pgm)->usbhandle, pgm->usbvid, pgm->usbvendor,
-		  pgm->usbpid, pgm->usbproduct) != 0) {
+  LNODEID usbpid = lfirst(pgm->usbpid);
+  int pid, vid;
+  if (usbpid) {
+    pid = *(int *)(ldata(usbpid));
+    if (lnext(usbpid))
+      fprintf(stderr,
+	      "%s: Warning: using PID 0x%04x, ignoring remaining PIDs in list\n",
+	      progname, pid);
+  } else {
+    pid = USBASP_SHARED_PID;
+  }
+  vid = pgm->usbvid? pgm->usbvid: USBASP_SHARED_VID;
+  if (usbOpenDevice(&PDATA(pgm)->usbhandle, vid, pgm->usbvendor, pid, pgm->usbproduct) != 0) {
     /* try alternatives */
     if(strcasecmp(ldata(lfirst(pgm->id)), "usbasp") == 0) {
     /* for id usbasp autodetect some variants */
@@ -500,7 +512,7 @@ static int usbasp_open(PROGRAMMER * pgm, char * port)
 
     fprintf(stderr,
             "%s: error: could not find USB device with vid=0x%x pid=0x%x",
-            progname, pgm->usbvid, pgm->usbpid);
+            progname, vid, pid);
     if (pgm->usbvendor[0] != 0) {
        fprintf(stderr, " vendor='%s'", pgm->usbvendor);
     }
