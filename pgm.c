@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* $Id: pgm.c 1290 2014-03-12 21:20:32Z joerg_wunsch $ */
+/* $Id: pgm.c 1294 2014-03-12 23:03:18Z joerg_wunsch $ */
 
 #include "ac_cfg.h"
 
@@ -141,7 +141,6 @@ PROGRAMMER * pgm_new(void)
 void pgm_free(PROGRAMMER * const p)
 {
   ldestroy_cb(p->id, free);
-  ldestroy_cb(p->usbpid, free);
   p->id = NULL;
   /* this is done by pgm_teardown, but usually cookie is not set to NULL */
   /* if (p->cookie !=NULL) {
