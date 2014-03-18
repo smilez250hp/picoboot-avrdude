@@ -50,23 +50,24 @@ struct frame{
 #define BOOTLOADER_SIZE 66
 
 #define DEBUG(...) if (verbose > 1) fprintf(stderr, __VA_ARGS__)
+#define DEBUG_FUNC DEBUG("%s\n", __func__)
 
 static void picoboot_not_implemented_1 (PROGRAMMER * pgm)
 {
-  DEBUG("PICOBOOT: picoboot_not_implemented_1()\n");
+  DEBUG_FUNC;
 }
 
 static int picoboot_not_implemented_2 (PROGRAMMER * pgm, AVRPART * p)
 {
-  DEBUG("PICOBOOT: picoboot_not_implemented_2()\n");
+  DEBUG_FUNC;
   return 0;
 }
 
 void picoboot_send_frame(union filedescriptor *fd, struct frame* f)
 {
   char *buf = (char*)f;
+  DEBUG_FUNC;
 
-  DEBUG("PICOBOOT: picoboot_send_frame()\n");
   f->check = f->data_lo ^ f->data_hi ^ f->command;
   serial_send(fd, buf, sizeof(*f));
 }
@@ -113,7 +114,8 @@ int picoboot_buffered_send(union filedescriptor *fd, struct frame* f)
 
 static int picoboot_open(PROGRAMMER * pgm, char * port)
 {
-  DEBUG("PICOBOOT: picoboot_open()\n");
+  DEBUG_FUNC;
+
   union pinfo pinfo;
   strcpy(pgm->port, port);
   pinfo.baud = pgm->baudrate? pgm->baudrate: 230400;
@@ -134,7 +136,7 @@ static int picoboot_open(PROGRAMMER * pgm, char * port)
 
 static int picoboot_initialize (PROGRAMMER * pgm, AVRPART * p)
 {
-  DEBUG("PICOBOOT: picoboot_initialize()\n");
+  DEBUG_FUNC;
 
   struct frame f;
   memset (&f, 0, sizeof(f));
@@ -145,7 +147,7 @@ static int picoboot_initialize (PROGRAMMER * pgm, AVRPART * p)
 
 static int picoboot_read_sig_bytes(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m)
 {
-  DEBUG("\nPICOBOOT: picoboot_read_sig_bytes()\n");
+  DEBUG_FUNC;
 
   /* bootloader doesn't support signature read, so fake it */
   m->buf[0] = 0x1e;
@@ -157,9 +159,33 @@ static int picoboot_read_sig_bytes(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m)
   return 0;
 }
 
-/* write partial page */
-int write_bytes (unsigned int addr, unsigned int num_bytes)
+int picoboot_erase_page (PROGRAMMER * pgm, int page_addr)
 {
+  struct frame f;
+  union filedescriptor *fd = &pgm->fd;
+
+  f.data_lo = page_addr & 0xff;
+  f.data_hi = (page_addr & 0xff00) >> 8;
+  f.command = 0x03; /* erase page */
+  picoboot_send_frame(fd, &f);
+  if (picoboot_wait_ack(fd) != 0) return -1;
+  return 0;
+}
+
+/* erase flash from top down */
+static int picoboot_chip_erase(PROGRAMMER * pgm, AVRPART * p)
+{
+  uint16_t page_addr;
+  AVRMEM* m;
+  DEBUG_FUNC;
+
+  m = avr_locate_mem(p, "flash");
+  page_addr = (m->page_size * m->num_pages) - BOOTLOADER_SIZE + 2; 
+  do {
+    page_addr -= m->page_size;
+    if (picoboot_erase_page(pgm, page_addr)) return -1;
+  } while (page_addr);
+
   return 0;
 }
 
@@ -190,16 +216,6 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
       f.command = 0x01; /* fill temp buffer */
       picoboot_buffered_send(fd, &f);
     }
-    return 0;
-  }
-
-  int erase_page (int page_addr)
-  {
-    f.data_lo = page_addr & 0xff;
-    f.data_hi = (page_addr & 0xff00) >> 8;
-    f.command = 0x03; /* erase page */
-    picoboot_send_frame(fd, &f);
-    if (picoboot_wait_ack(fd) != 0) return -1;
     return 0;
   }
 
@@ -262,12 +278,10 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
           appstart, vrst_vec_addr);
 
     if (fill_page_buf(vrst_vec_page) != 0) return -1;
-    if (erase_page(vrst_vec_page) != 0) return -1;
     if (write_page(vrst_vec_page) != 0) return -1;
   }
  
   if (fill_page_buf(addr) != 0) return -1;
-  if (erase_page(addr) != 0) return -1;
   if (write_page(addr) != 0) return -1;
 
   return num_bytes;
@@ -275,7 +289,7 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
 
 static void picoboot_close(PROGRAMMER * pgm)
 {
-  DEBUG("PICOBOOT: picoboot_close()\n");
+  DEBUG_FUNC;
   serial_close(&pgm->fd);
   pgm->fd.ifd = -1;
 }
@@ -284,7 +298,7 @@ const char picoboot_desc[] = "picoboot bootloader";
 
 void picoboot_initpgm(PROGRAMMER * pgm)
 {
-  DEBUG("PICOBOOT: picoboot_initpgm()\n");
+  DEBUG_FUNC;
 
   strcpy(pgm->type, "Picoboot");
   pgm->open = picoboot_open;
@@ -292,7 +306,7 @@ void picoboot_initpgm(PROGRAMMER * pgm)
   pgm->initialize = picoboot_initialize;
   pgm->read_sig_bytes = picoboot_read_sig_bytes;
   pgm->program_enable = picoboot_not_implemented_2;
-  pgm->chip_erase     = picoboot_not_implemented_2;
+  pgm->chip_erase     = picoboot_chip_erase;
   pgm->paged_write    = picoboot_paged_write;
   pgm->close = picoboot_close;
 }
