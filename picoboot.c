@@ -60,7 +60,14 @@ static void picoboot_not_implemented_1 (PROGRAMMER * pgm)
 static int picoboot_not_implemented_2 (PROGRAMMER * pgm, AVRPART * p)
 {
   DEBUG_FUNC;
-  return 0;
+  return -1;
+}
+
+static int  picoboot_not_implemented_3 (struct programmer_t * pgm, AVRPART * p, AVRMEM * mem,
+			   unsigned long addr, unsigned char * value)
+{
+  DEBUG_FUNC;
+  return -1;
 }
 
 void picoboot_send_frame(union filedescriptor *fd, struct frame* f)
@@ -301,12 +308,16 @@ void picoboot_initpgm(PROGRAMMER * pgm)
   DEBUG_FUNC;
 
   strcpy(pgm->type, "Picoboot");
-  pgm->open = picoboot_open;
-  pgm->enable = picoboot_not_implemented_1;
+  pgm->open     = picoboot_open;
+  pgm->enable   = picoboot_not_implemented_1;
+  pgm->disable  = picoboot_not_implemented_1;
   pgm->initialize = picoboot_initialize;
   pgm->read_sig_bytes = picoboot_read_sig_bytes;
   pgm->program_enable = picoboot_not_implemented_2;
   pgm->chip_erase     = picoboot_chip_erase;
+  pgm->close          = picoboot_close;
+  pgm->read_byte      = picoboot_not_implemented_3;
+
+  /* optional functions */
   pgm->paged_write    = picoboot_paged_write;
-  pgm->close = picoboot_close;
 }
