@@ -253,7 +253,7 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
   }
 
   if ( addr > (vrst_vec_addr - page_size)) {
-    /* virtual reset vector page written along with page 0 */
+    /* virtual reset vector page already written along with page 0 */
     return num_bytes;
   }
 
@@ -276,6 +276,10 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
     m->buf[0] = (vrst_vec_addr/2) & 0x00FF;
     m->buf[1] = ((vrst_vec_addr/2) | 0xC000) >> 8;
 
+    /* write page 0 */
+    if (fill_page_buf(addr) != 0) return -1;
+    if (write_page(addr) != 0) return -1;
+
     /* calculate new rjmp for appstart */
     appstart = 0xc000 |
                (((appstart & 0x0FFF) + BOOTLOADER_SIZE/2) & 0x0FFF);
@@ -287,9 +291,10 @@ static int picoboot_paged_write(PROGRAMMER * pgm, AVRPART * p, AVRMEM * m,
     if (fill_page_buf(vrst_vec_page) != 0) return -1;
     if (write_page(vrst_vec_page) != 0) return -1;
   }
- 
-  if (fill_page_buf(addr) != 0) return -1;
-  if (write_page(addr) != 0) return -1;
+  else {
+    if (fill_page_buf(addr) != 0) return -1;
+    if (write_page(addr) != 0) return -1;
+  }
 
   return num_bytes;
 }
